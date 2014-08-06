@@ -1,0 +1,18 @@
+form
+    div.form-group
+        label Username:
+            input.form-control(ng-model="user.Username" required)
+    div.form-group
+        label Password:
+            input.form-control(ng-model="user.Password" type="password" required)
+    div.form-group
+        label Email:
+            input.form-control(ng-model="user.Email" type="email")
+    div.form-group
+        label
+            input(ng-model="user.ShowNSFW" type="checkbox")
+            | Show NSFW images
+    div.form-group
+        label Profile photo (url):
+            input.form-control(ng-model="user.ProfilePhoto")
+    button.btn.btn-default(type="submit") Sign up

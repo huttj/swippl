@@ -1,0 +1,29 @@
+{
+  "name": "Swippl",
+  "version": "0.0.1",
+  "authors": [
+    "joshuahutt <joshua@huttj.com>"
+  ],
+  "description": "A new pic with every swipe.",
+  "main": "index.js",
+  "license": "MIT",
+  "homepage": "http://www.swippl.com",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-route": "~1.2.21",
+    "angular-resource": "~1.2.21",
+    "greensock": "~1.13.1",
+    "angular-touch": "~1.2.21",
+    "font-awesome": "~4.1.0",
+    "toastr": "~2.0.3",
+    "bootstrap": "~3.2.0",
+    "jquery": "~2.1.1"
+  }
+}

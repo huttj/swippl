@@ -1,0 +1,54 @@
+extends layout
+block content
+    body(ng-app="Swippl")
+        div(ng-controller="swMenuCtrl")
+            div.title
+                h1
+                    a(href="/") Swippl
+            ul.nav.nav-pills(style="float: right; margin: 20px")
+                li(ng-hide="currentUser" class="loginButton")
+                    a(href="" ng-click="toggleLogin()") Login
+                    div.navList.loginList
+                        form
+                            div.form-group
+                                label Username
+                                input.form-control(name="username" ng-model="loginInfo.username")
+                            div.form-group
+                                label Password
+                                input.form-control(name="password" type="password" ng-model="loginInfo.password")
+                            input.btn.btn-default(type="submit" value="Log In" ng-click="login()")
+
+                li(ng-hide="currentUser" class="signupButton")
+                    a(href="#" ng-click="toggleSignup()") Sign Up
+                    div.navList.signupList
+                        form
+                            div.form-group
+                                label Username:
+                                input.form-control(ng-model="newUser.Username" required)
+                            div.form-group
+                                label Password:
+                                input.form-control(ng-model="newUser.Password" type="password" required)
+                            div.form-group
+                                label Email:
+                                input.form-control(ng-model="newUser.Email" type="email")
+                            div.form-group
+                                label
+                                    input(ng-model="newUser.ShowNSFW" type="checkbox")
+                                    | Show NSFW images
+                            div.form-group
+                                label Profile photo (url):
+                                input.form-control(ng-model="newUser.ProfilePhoto")
+                            button.btn.btn-default(type="submit" ng-click="signup()") Sign up
+                li(ng-show="currentUser" class="menuButton")
+                    a(href="" ng-click="toggleMenu()") {{ currentUser.Username }}
+                    ol.navList.menuList.dropdown-menu(style="position: absolute; right: 0;")
+                        li
+                            a(href="/upload") Upload
+                        li
+                            a(href="/profile") Profile
+                        li
+                            a(href="/settings") Settings
+                        li
+                            a(href="#", ng-click="logout()") Log Out
+            div(style="clear: both;")
+        div(ng-view)
