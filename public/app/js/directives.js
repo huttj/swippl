@@ -3,7 +3,6 @@ temp = [];
 angular.module('Swippl')
 
 .directive('swContainer', function($q, $rootScope, $document, $swipe, swPhotoSvc, swVoteSvc) {
-    // TODO: Implement loading of photos
     return function($scope, element, attrs) {
 
         // Variables
@@ -25,14 +24,26 @@ angular.module('Swippl')
 
         // Functions
         {
-            // Check the stack to see if it is nearly empty. If so, get a new set.
+            /**
+             * Check the stack to see if it is nearly empty. If so, get a new set
+             * @return {void}
+             */
             function checkList() {
                 if ($(element).find('.swippl-slide').length <= 2) {
                     swPhotoSvc.getNextSet().then(handleImgs);
                 }
             }
 
-            // Prep image div
+            /**
+             * Prep image div.slide
+             * @param {Object} photo            - Photo object used to create the slide
+             * @param {Number} photo.PhotoID    - The UID of the photo from the database
+             * @param {String} photo.Url        - A URL used as the src of the photo
+             * @param {Number} photo.Score      - The current score of the photo (likes - dislikes)
+             * @param {Number} photo.Prediction - The prediction for whether the user will like the photo (+ == like)
+             * @param {Number} photo.SampleSize - The number of users used to calculate the prediction
+             * @returns {IAugmentedJQuery}      - A div with the photo data embedded
+             */
             function makeImg(photo) {
 //                var img = angular.element('<div/>');
 //                img.addClass('swippl-slide');
@@ -59,7 +70,13 @@ angular.module('Swippl')
                 return img;
             }
 
-            // Append image. Not sure if preloading is necessary...
+            /**
+             * Append image to the slide container.
+             * @todo Determine if preloading is necessary.
+             * @param imgElem {IAugmentedJQuery} - Image element created by the makeImg method
+             * @param url {String} - The URL of the image, used to pre-load the image in an img tag and register a promise.
+             * @returns {Deferred} - A promise that is resolved when the image is preloaded.
+             */
             function appendImg(imgElem, url) {
                 // Prepend the image to the stack
                 element.prepend(imgElem);
@@ -76,8 +93,11 @@ angular.module('Swippl')
                 return q;
             }
 
-            // Check to see if the last set sent by swPhotoSvc
-            // contains the photo in question, specified by PhotoID.
+            /**
+             * Check to see if the last set sent by swPhotoSvc. Contains the photo in question, specified by PhotoID.
+             * @param   PhotoID {Number} - The ID of the photo in question
+             * @returns {boolean} - Whether or not the photo ID was in the last set sent by the swPhotoSvc.
+             */
             function inLastSet(PhotoID) {
                 for (var i = lastSet.length - 1; i >= 0; i--) {
                     if (lastSet[i] == PhotoID) return true;
@@ -169,6 +189,11 @@ angular.module('Swippl')
                 }
             }
 
+            /**
+             * Sends a vote to the swVoteSvc, pulling the data out of the imgElem, if available.
+             * @param imgElem {!HTMLDivElement} - The photo that is to be voted on.
+             * @param vote {!Number} - A number representing the vote (-1 == dislike, 0 == skip, 1 == like)
+             */
             function sendVote(imgElem, vote) {
                 var $imgElem = $(imgElem);
                 var thisVote = {
@@ -305,7 +330,6 @@ angular.module('Swippl')
 
             // Animation function for the on-swipe's move; makes bottommost photo
             // (that is not being removed) follow the swipe
-            // TODO: Replace with GSAP
             var translateAndRotate = function (x, y, z, deg) {
                 var bottom = getBottom();
                 if(!bottom) return;
@@ -368,7 +392,7 @@ angular.module('Swippl')
                     e.stopPropagation();
                 },
 
-                // TODO: Use hammer.js to do the velocity right
+                // TODO: Use hammer.js to do the velocity right OR Use GASP's drag plugin
                 move: function (coords, e) {
                     if (startX != null && getBottom()) {
                         var now = Date.now();
@@ -377,13 +401,12 @@ angular.module('Swippl')
                         // rough velocity calculation
                         var v = (last - coords.x) / (now - time);
 
-                        // Magic number 27 removes jumpiness on my Note 2 -- it has to be adjusted in the direction of the drag
-                        // TODO: Fix jump when dragging across the middle
                         var elem = getBottom();
                         var width = elem.clientWidth;
                         var height = elem.clientHeight;
                         var deltaYRatio = twistY = .67 - (((startY - elem.offsetParent.offsetTop) / height) / 3);
 
+                        // Magic number 27 removes jumpiness on my Note 2 -- it has to be adjusted in the direction of the drag
                         // var deltaX = coords.x - startX < 0 ? coords.x - startX + 27 : coords.x - startX - 27;
                         var deltaX = coords.x - startX;
                         var deltaXRatio = deltaX / width;
