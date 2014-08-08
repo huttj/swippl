@@ -204,9 +204,9 @@ angular.module('Swippl')
                     Prediction: $imgElem.attr('data-prediction'),
                 };
 
-                console.log(thisVote);
-
-                swVoteSvc.addVote(thisVote);
+                swVoteSvc.addVote(thisVote)
+                    .then(console.log.bind(console))
+                    .catch(console.warn.bind(console));
             }
 
             // Removes the bottommost image from the stack that is not already

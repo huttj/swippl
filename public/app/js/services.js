@@ -52,19 +52,33 @@ angular.module('Swippl')
     }
 })
 
-.service('swVoteSvc', function($http, $rootScope, swIdentitySvc) {
+.service('swVoteSvc', function($http, $q, $rootScope, swIdentitySvc) {
     var currentSession = [];
     var commitQueue = [];
 
     function addVote(thisVote) {
 
-        currentSession.push(thisVote);
+        // If it has been voted on already, reject the new vote
+        if (inEitherQueue(thisVote.PhotoID)) {
+            var q = $q.defer();
+            q.reject('Photo ' + thisVote.PhotoID + ' has already been voted on.');
+            return q.promise;
+        }
 
         if (swIdentitySvc.currentUser) {
             thisVote.UserID = swIdentitySvc.currentUser.UserID;
-            return $http.post('/api/votes/add', thisVote);
+            return $http.post('/api/votes/add', thisVote).then(function() {
+                currentSession.push(thisVote);
+                return 'Vote successfully submitted for photo ' + thisVote.PhotoID + '.';
+            }).catch(function() {
+                return 'Vote for photo ' + thisVote.PhotoID + ' unsuccessful.';
+            });
         } else {
-            commitQueue.push(thisVote);
+            var q = $q.defer(commitQueue.push(thisVote));
+            q.resolve();
+            return q.promise.then(function() {
+                return 'Vote for photo ' + thisVote.PhotoID + ' queued. Vote will be submitted when you log in.';
+            });
         }
     }
 
@@ -76,15 +90,27 @@ angular.module('Swippl')
         });
     }
 
-    function inCommitQueue(PhotoID) {
-        console.log(commitQueue);
-        for (var i = 0; i<commitQueue.length; i++) {
-            if (commitQueue[i].PhotoID == PhotoID) return true;
+    function inQueue(PhotoID, queue) {
+        for (var i = 0; i<queue.length; i++) {
+            if (queue[i].PhotoID == PhotoID) return true;
         }
         return false;
     }
 
+    function inCommitQueue(PhotoID) {
+        return inQueue(PhotoID, commitQueue);
+    }
+
+    function inEitherQueue(PhotoID) {
+        return inQueue(PhotoID, commitQueue) || inQueue(currentSession, PhotoID);
+    }
+
     $rootScope.$on('logged-in', commitVotes);
+
+    $rootScope.$on('logged-out', function() {
+        currentSession = [];
+        commitQueue    = [];
+    });
 
     return {
         addVote: addVote,
@@ -96,7 +122,7 @@ angular.module('Swippl')
     function signup(newUser) {
         return $http.post('/api/signup', newUser).then(function(res) {
             if (res.data.result == 'success') {
-                return;
+                return true;
             } else {
                 return $q.reject(res.data.message);
                 // throws get caught by angular and reported, even in promises...
@@ -114,19 +140,19 @@ angular.module('Swippl')
 
 .service('swToastSvc', function(myToastr) {
     myToastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "positionClass": "toast-bottom-right",
-        "onclick": null,
-        "showDuration": "200",
-        "hideDuration": "300",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "swing",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
+        "closeButton":      true,
+        "debug":            false,
+        "positionClass":    "toast-bottom-right",
+        "onclick":          null,
+        "showDuration":     "200",
+        "hideDuration":     "300",
+        "timeOut":          "5000",
+        "extendedTimeOut":  "1000",
+        "showEasing":       "swing",
+        "hideEasing":       "swing",
+        "showMethod":       "fadeIn",
+        "hideMethod":       "fadeOut"
+    };
     return {
         success: function(msg) {
             myToastr.success(msg);
